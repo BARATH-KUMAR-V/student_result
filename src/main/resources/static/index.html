@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Result Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">Student Result Portal</h1>
+                    <span class="brand-sub">Academic Performance & Records Management</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="db-pill">
+                    <span class="pulse-dot"></span>
+                    <span id="dbIndicator">H2 In-Memory DB Active</span>
+                </div>
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" data-tab="searchTab" id="navSearchTab">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        Search Result
+                    </button>
+                    <button class="nav-tab" data-tab="adminTab" id="navAdminTab">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        Admin Dashboard
+                    </button>
+                    <button class="nav-tab" data-tab="jenkinsTab" id="navJenkinsTab">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        CI/CD Pipeline
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden"></div>
+
+        <!-- ============================================== -->
+        <!-- TAB 1: Search Result (Public / Student View) -->
+        <!-- ============================================== -->
+        <section id="searchTab" class="tab-pane active">
+            <div class="search-hero">
+                <div class="hero-badge">Official Result Portal</div>
+                <h2 class="hero-title">Check Your Examination Result</h2>
+                <p class="hero-desc">Enter your Roll Number or Student ID to view and download your verified semester grade sheet.</p>
+
+                <div class="search-box-card">
+                    <form id="searchForm" class="search-form">
+                        <div class="input-group">
+                            <span class="input-icon">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                            </span>
+                            <input type="text" id="rollNumberInput" placeholder="Enter Roll Number (e.g. STU-101)" autocomplete="off" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="btnSearch">
+                            <span>Check Result</span>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </form>
+
+                    <div class="quick-chips">
+                        <span class="chips-label">Quick Try:</span>
+                        <button class="chip" data-roll="STU-101">STU-101 (Distinction)</button>
+                        <button class="chip" data-roll="STU-102">STU-102 (First Div)</button>
+                        <button class="chip" data-roll="STU-103">STU-103 (Pass)</button>
+                        <button class="chip" data-roll="STU-106">STU-106 (Needs Improvement)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Card (Initially hidden) -->
+            <div id="resultContainer" class="result-container hidden">
+                <div class="mark-sheet-card" id="markSheetCard">
+                    <!-- Certificate Header -->
+                    <div class="ms-header">
+                        <div class="ms-watermark">EXAMINATION BOARD</div>
+                        <div class="ms-institution">
+                            <div class="inst-logo">
+                                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="inst-title">BOARD OF SECONDARY & HIGHER EDUCATION</h3>
+                                <p class="inst-subtitle">Annual Examination Academic Session 2025–2026</p>
+                            </div>
+                        </div>
+                        <div class="ms-badge-wrap">
+                            <span id="resStatusBadge" class="status-badge pass">PASS</span>
+                        </div>
+                    </div>
+
+                    <div class="ms-divider"></div>
+
+                    <!-- Student Info Grid -->
+                    <div class="student-meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-label">STUDENT NAME</span>
+                            <span class="meta-value" id="resStudentName">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">ROLL NUMBER</span>
+                            <span class="meta-value font-mono" id="resRollNumber">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CLASS / SECTION</span>
+                            <span class="meta-value" id="resClass">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">EMAIL ADDRESS</span>
+                            <span class="meta-value" id="resEmail">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Marks Table -->
+                    <div class="table-responsive">
+                        <table class="marks-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject Code & Title</th>
+                                    <th>Max Marks</th>
+                                    <th>Pass Marks</th>
+                                    <th>Marks Obtained</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resMarksBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Summary & Grade Section -->
+                    <div class="ms-summary-grid">
+                        <div class="summary-box">
+                            <span class="sum-label">TOTAL MARKS</span>
+                            <span class="sum-value" id="resTotalMarks">-</span>
+                            <span class="sum-sub">Out of 500</span>
+                        </div>
+                        <div class="summary-box">
+                            <span class="sum-label">PERCENTAGE</span>
+                            <span class="sum-value" id="resPercentage">-</span>
+                            <span class="sum-sub">Aggregate</span>
+                        </div>
+                        <div class="summary-box">
+                            <span class="sum-label">GRADE</span>
+                            <span class="sum-value grade-accent" id="resGrade">-</span>
+                            <span class="sum-sub" id="resGradeDesc">Standard Evaluation</span>
+                        </div>
+                        <div class="summary-box remarks-box">
+                            <span class="sum-label">PERFORMANCE REMARKS</span>
+                            <span class="remarks-text" id="resRemarks">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions Footer -->
+                    <div class="ms-footer">
+                        <span class="verification-note">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Digitally verified and authenticated academic record.
+                        </span>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" id="btnPrintCard">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                                Print / Save PDF
+                            </button>
+                            <button class="btn btn-outline" id="btnSearchAnother">
+                                Check Another Result
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Not Found State -->
+            <div id="notFoundCard" class="empty-state-card hidden">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>
+                </div>
+                <h3>Result Not Found</h3>
+                <p id="notFoundMsg">No student record matched your search query. Please verify the roll number or contact the administration desk.</p>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: Admin Dashboard (Manage Results) -->
+        <!-- ============================================== -->
+        <section id="adminTab" class="tab-pane">
+            <!-- Stats Banner -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div>
+                        <span class="stat-label">Total Enrolled</span>
+                        <div class="stat-number" id="statTotalStudents">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div>
+                        <span class="stat-label">Students Passed</span>
+                        <div class="stat-number" id="statPassedStudents">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-red">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </div>
+                    <div>
+                        <span class="stat-label">Students Failed</span>
+                        <div class="stat-number" id="statFailedStudents">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    </div>
+                    <div>
+                        <span class="stat-label">Pass Percentage</span>
+                        <div class="stat-number" id="statPassRate">0%</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-amber">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <div>
+                        <span class="stat-label">Highest Score</span>
+                        <div class="stat-number" id="statHighestMarks">0 <span class="sub-unit">/ 500</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Controls -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-header-left">
+                        <h3 class="table-title">Student Records Management</h3>
+                        <p class="table-desc">Add, edit, review, and delete student examination records.</p>
+                    </div>
+                    <div class="table-actions">
+                        <div class="filter-box">
+                            <input type="text" id="tableSearchInput" placeholder="Filter by name or roll..." class="filter-input">
+                        </div>
+                        <button class="btn btn-primary" id="btnOpenAddModal">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add New Result
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Student Name</th>
+                                <th>Class</th>
+                                <th>Total (500)</th>
+                                <th>Percent</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: CI/CD Pipeline & Jenkins Guide -->
+        <!-- ============================================== -->
+        <section id="jenkinsTab" class="tab-pane">
+            <div class="guide-container">
+                <div class="guide-header">
+                    <h2>Jenkins CI/CD Pipeline & Database Architecture</h2>
+                    <p>Automated pipeline setup for compiling, testing, packaging, and archiving the Spring Boot Student Result Portal.</p>
+                </div>
+
+                <!-- Pipeline Stages Visualizer -->
+                <div class="pipeline-card">
+                    <h3 class="card-title">Jenkins Declarative Pipeline Stages</h3>
+                    <div class="pipeline-stepper">
+                        <div class="step-card">
+                            <div class="step-badge">Stage 1</div>
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+                            </div>
+                            <h4 class="step-name">Checkout</h4>
+                            <p class="step-desc">Pull latest source code from SCM / Git repository.</p>
+                            <code class="step-cmd">checkout scm</code>
+                        </div>
+
+                        <div class="step-arrow">→</div>
+
+                        <div class="step-card">
+                            <div class="step-badge">Stage 2</div>
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+                            </div>
+                            <h4 class="step-name">Build</h4>
+                            <p class="step-desc">Compile Java source code & validate project dependencies.</p>
+                            <code class="step-cmd">mvn clean compile</code>
+                        </div>
+
+                        <div class="step-arrow">→</div>
+
+                        <div class="step-card">
+                            <div class="step-badge">Stage 3</div>
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                            <h4 class="step-name">Test</h4>
+                            <p class="step-desc">Execute JUnit tests & publish test results report.</p>
+                            <code class="step-cmd">mvn test</code>
+                        </div>
+
+                        <div class="step-arrow">→</div>
+
+                        <div class="step-card">
+                            <div class="step-badge">Stage 4</div>
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                            </div>
+                            <h4 class="step-name">Package</h4>
+                            <p class="step-desc">Assemble executable Spring Boot runnable JAR file.</p>
+                            <code class="step-cmd">mvn package -DskipTests</code>
+                        </div>
+
+                        <div class="step-arrow">→</div>
+
+                        <div class="step-card">
+                            <div class="step-badge">Stage 5</div>
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect width="22" height="5" x="1" y="3"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                            </div>
+                            <h4 class="step-name">Archive</h4>
+                            <p class="step-desc">Save build artifact JAR for deployment & distribution.</p>
+                            <code class="step-cmd">archiveArtifacts 'target/*.jar'</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Configuration Details -->
+                <div class="info-row">
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <div class="card-icon-tag h2-tag">H2 Database</div>
+                            <h3>In-Memory Development Database</h3>
+                        </div>
+                        <p>Currently active out-of-the-box. No external installation required.</p>
+                        <ul class="info-list">
+                            <li><strong>Console URL:</strong> <a href="/h2-console" target="_blank">http://localhost:8080/h2-console</a></li>
+                            <li><strong>JDBC URL:</strong> <code>jdbc:h2:mem:studentdb</code></li>
+                            <li><strong>Username:</strong> <code>sa</code></li>
+                            <li><strong>Password:</strong> <em>(leave blank)</em></li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <div class="card-icon-tag mysql-tag">MySQL Database</div>
+                            <h3>Production Ready Integration</h3>
+                        </div>
+                        <p>To switch from H2 to MySQL, update <code>application.properties</code>:</p>
+                        <pre class="code-block"><code>spring.datasource.url=jdbc:mysql://localhost:3306/studentdb
+spring.datasource.username=root
+spring.datasource.password=your_password
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=update</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Add / Edit Result -->
+    <div id="resultModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Record Student Result</h3>
+                <button class="modal-close" id="btnCloseModal">&times;</button>
+            </div>
+            <form id="resultForm">
+                <input type="hidden" id="formStudentId">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="formRollNumber">Roll Number *</label>
+                        <input type="text" id="formRollNumber" placeholder="e.g. STU-107" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formStudentName">Full Name *</label>
+                        <input type="text" id="formStudentName" placeholder="e.g. Kavita Krishnan" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formGradeClass">Class / Stream *</label>
+                        <input type="text" id="formGradeClass" placeholder="e.g. Class 10th - Section A" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formEmail">Email Address</label>
+                        <input type="email" id="formEmail" placeholder="e.g. student@example.com">
+                    </div>
+                </div>
+
+                <div class="subject-section-header">
+                    <h4>Subject Marks (Out of 100)</h4>
+                    <span class="sub-hint">Pass marks: 35 per subject</span>
+                </div>
+
+                <div class="marks-input-grid">
+                    <div class="form-group">
+                        <label for="formMath">Mathematics</label>
+                        <input type="number" id="formMath" min="0" max="100" placeholder="0-100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formScience">Science</label>
+                        <input type="number" id="formScience" min="0" max="100" placeholder="0-100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formEnglish">English</label>
+                        <input type="number" id="formEnglish" min="0" max="100" placeholder="0-100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formCS">Computer Science</label>
+                        <input type="number" id="formCS" min="0" max="100" placeholder="0-100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formSocial">Social Studies</label>
+                        <input type="number" id="formSocial" min="0" max="100" placeholder="0-100" required>
+                    </div>
+                </div>
+
+                <!-- Live Preview in Form -->
+                <div class="live-calc-box">
+                    <div class="calc-item">
+                        <span>Total:</span>
+                        <strong id="liveTotal">0 / 500</strong>
+                    </div>
+                    <div class="calc-item">
+                        <span>Percentage:</span>
+                        <strong id="livePercent">0.0%</strong>
+                    </div>
+                    <div class="calc-item">
+                        <span>Grade:</span>
+                        <strong id="liveGrade">-</strong>
+                    </div>
+                    <div class="calc-item">
+                        <span>Status:</span>
+                        <span id="liveStatus" class="status-badge-inline pass">PASS</span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="btnCancelModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveResult">Save Result</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
