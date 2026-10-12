@@ -41,8 +41,8 @@ java -jar target/student-result-portal-1.0.0.jar
 ```
 
 ### 3. Open in Browser
-- **Portal UI:** [http://localhost:8080](http://localhost:8080)
-- **H2 Web Console:** [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+- **Portal UI:** [http://localhost:8081](http://localhost:8081)
+- **H2 Web Console:** [http://localhost:8081/h2-console](http://localhost:8081/h2-console)
   - JDBC URL: `jdbc:h2:mem:studentdb`
   - Username: `sa`
   - Password: *(leave blank)*
